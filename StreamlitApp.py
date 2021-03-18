@@ -96,7 +96,6 @@ if uploaded_file is not None:
     st.pyplot(fig)
         
     # Calculate step height of levelled data
-
     percent_data = st.slider('% Step for calculation', 0.0, 1.0, 0.75)
     if len(steps) > 1:
         step1 = df[df['Position'] <= (0.75*steps.iloc[0,0])]
