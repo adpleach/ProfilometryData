@@ -13,7 +13,7 @@ import pandas as pd
 
 # Define required function to find steps in data
 def find_steps(data):
-    data['diff'] = np.gradient(data[1])
+    data['diff'] = np.gradient(data['Height'])
     data['diffmagnitude'] = np.absolute(df['diff'])
     max_step = data['diffmagnitude'].max()
     #step_position = data[data['diffmagnitude'] == max_step]
@@ -32,9 +32,9 @@ def find_steps_max(data):
             step_positions['order_list'].iloc[x] = order
         median = []
         for x in step_positions['order_list'].unique():
-            subset_median = step_positions[step_positions['order_list'] == x][0].median()
+            subset_median = step_positions[step_positions['order_list'] == x]['Position'].median()
             median.append(round(subset_median,3))
-        steps = step_positions[step_positions[0].isin(median)]
+        steps = step_positions[step_positions['Position'].isin(median)]
         return steps
     else:
         return step_positions
@@ -49,10 +49,10 @@ def detect_step_error(data):
 
 def level_data(data):
     steps = find_steps_max(data)
-    fitline = data[data[0]<=(0.75*steps.iloc[0,0])]
-    equationofline = np.polyfit(fitline[0], fitline[1], 1)
-    data['fitlinedata'] = (equationofline[0]*df[0])+equationofline[1]
-    data['leveldata'] = data[1]-data['fitlinedata']
+    fitline = data[data['Position']<=(0.75*steps.iloc[0,0])]
+    equationofline = np.polyfit(fitline['Position'], fitline['Height'], 1)
+    data['fitlinedata'] = (equationofline[0]*df['Position'])+equationofline[1]
+    data['leveldata'] = data['Height']-data['fitlinedata']
     return data['leveldata']
 
 # App initialize
@@ -64,12 +64,12 @@ chart = st.empty()
 if uploaded_file is not None:
     
     # Import data
-    df = pd.read_csv(uploaded_file, header = None, delimiter='\t')
+    df = pd.read_csv(uploaded_file, header = None, delimiter='\t', names = ['Position', 'Height'])
     #st.dataframe(df.head()) - print first 5 lines of data
 
     # Plot raw data
     fig, ax = plt.subplots()
-    ax.plot(df[0], df[1])
+    ax.plot(df['Position'], df['Height'])
     ax.set_title('Raw Data')
     ax.set_xlabel('Position (mm)')
     ax.set_ylabel('Step height (um)')
@@ -89,7 +89,7 @@ if uploaded_file is not None:
     # Level data
     df['leveldata'] = level_data(df)
     fig, ax = plt.subplots()
-    ax.plot(df[0], df['leveldata'])
+    ax.plot(df['Position'], df['leveldata'])
     ax.set_title('Levelled Data')
     ax.set_xlabel('Position (mm)')
     ax.set_ylabel('Step height (um)')
@@ -97,8 +97,8 @@ if uploaded_file is not None:
         
     # Calculate step height of levelled data
     percent_data = st.slider('% Step for calculation', 0.0, 1.0, 0.75)
-    step1 = df[df[0] <= (percent_data*steps.iloc[0,0])]
-    step2 = df[df[0] >= ((2-percent_data)*steps.iloc[0,0])]
+    step1 = df[df['Position'] <= (percent_data*steps.iloc[0,0])]
+    step2 = df[df['Position'] >= ((2-percent_data)*steps.iloc[0,0])]
     mean = np.absolute(step1['leveldata'].mean() - step2['leveldata'].mean())
     parameters = {'Parameter': ['Step height 1'], 'Value (um)': [mean]}
     parameterdf = pd.DataFrame(data= parameters)
