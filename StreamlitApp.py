@@ -96,12 +96,9 @@ if uploaded_file is not None:
     st.pyplot(fig)
         
     # Calculate step height of levelled data
-    step1 = df[df[0] <= (0.75*steps.iloc[0,0])]
-    if len(steps) > 1:
-        for i in range():
-            step2 = df[(df[0] >= (1.25*steps.iloc[0,0])) & (df[0] <= (0.75*steps.iloc[1,0]))]
-    else:
-        step2 = df[df[0] >= (1.25*steps.iloc[0,0])]
+    percent_data = st.slider('% Step for calculation', 0.0, 1.0, 0.75)
+    step1 = df[df[0] <= (percent_data*steps.iloc[0,0])]
+    step2 = df[df[0] >= ((2-percent_data)*steps.iloc[0,0])]
     mean = np.absolute(step1['leveldata'].mean() - step2['leveldata'].mean())
     parameters = {'Parameter': ['Step height 1'], 'Value (um)': [mean]}
     parameterdf = pd.DataFrame(data= parameters)
@@ -113,8 +110,24 @@ if uploaded_file is not None:
     parameterdf.loc[len(parameterdf)] = ['TIR Level 2', TIR2]
     
     # Calculate surface roughness - Ra
+    for i in range(len(step1)):
+        step1['deviation'] = np.absolute(step1['leveldata'] - step1['leveldata'].mean())
+    Ra1 = step1['deviation'].mean()
+    for i in range(len(step2)):
+        step2['deviation'] = np.absolute(step2['leveldata'] - step2['leveldata'].mean())
+    Ra2 = step2['deviation'].mean()
+    parameterdf.loc[len(parameterdf)] = ['Ra 1', Ra1]
+    parameterdf.loc[len(parameterdf)] = ['Ra 2', Ra2]
     
+    # Calculate surface roughness - RMS
+    step1['leveldatasquare'] = step1['leveldata']**2
+    RMS1 = np.sqrt(step1['leveldatasquare'].mean())
+    step2['leveldatasquare'] = step2['leveldata']**2
+    RMS2 = np.sqrt(step2['leveldatasquare'].mean())
+    parameterdf.loc[len(parameterdf)] = ['RMS 1', RMS1]
+    parameterdf.loc[len(parameterdf)] = ['RMS 2', RMS2]
     
+    # Add sidebar with parameter list
     st.sidebar.subheader('Parameters')
     st.sidebar.dataframe(parameterdf)    
 
