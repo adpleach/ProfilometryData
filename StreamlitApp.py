@@ -96,16 +96,31 @@ if uploaded_file is not None:
     st.pyplot(fig)
         
     # Calculate step height of levelled data
-    step1 = df[df[0] <= (0.75*steps.iloc[0,0])]
-    if len(steps) > 1:
-        for i in range():
-            step2 = df[(df[0] >= (1.25*steps.iloc[0,0])) & (df[0] <= (0.75*steps.iloc[1,0]))]
-    else:
-        step2 = df[df[0] >= (1.25*steps.iloc[0,0])]
-    mean = np.absolute(step1['leveldata'].mean() - step2['leveldata'].mean())
-    parameters = {'Parameter': ['Step height 1'], 'Value (um)': [mean]}
-    parameterdf = pd.DataFrame(data= parameters)
+  if len(steps) > 1:
+        step1 = df[df['Position'] <= (0.75*steps.iloc[0,0])]
+        step2 = df[(df['Position'] >= (1.25*steps.iloc[0,0])) & (df['Position'] <= (0.75*steps.iloc[1,0]))]
+        parameters = {'Step Height 0': np.absolute(step1['leveldata'].mean() - step2['leveldata'].mean())}
+        for i in range(1, len(steps)):
+            if i == len(steps)-1:
+                st.write(i)
+                stepx = df[(df['Position'] >= (1.25*steps.iloc[i,0])) & (df['Position'] <= (0.75*steps.iloc[i+1,0]))]
+                stepy = df[df['Position'] >= (1.25*steps.iloc[i+1,0])]
+                parameters["Step Height {0}".format(i)] = np.absolute(stepx['leveldata'].mean() - stepy['leveldata'].mean())
+            else:
+                st.write(i)
+                stepx = df[(df['Position'] >= (1.25*steps.iloc[i-1,0])) & (df['Position'] <= (0.75*steps.iloc[i,0]))]
+                stepy = df[(df['Position'] >= (1.25*steps.iloc[i,0])) & (df['Position'] <= (0.75*steps.iloc[i+1,0]))]
+                parameters["Step Height {0}".format(i)] = np.absolute(stepx['leveldata'].mean() - stepy['leveldata'].mean())
     
+    else:
+        step1 = df[df['Position'] <= (0.75*steps.iloc[0,0])]
+        step2 = df[df['Position'] >= (1.25*steps.iloc[0,0])]
+        stepheight = np.absolute(step1['leveldata'].mean() - step2['leveldata'].mean())
+        parameters = ['Step Height 1', stepheight]
+    parameterdf = pd.DataFrame(data= parameters, columns = ['Parameter', 'Value (um)'])
+    average_step_height = parameterdf['Value (um)'].mean()
+    parameterdf.loc[len(parameterdf)] = ['Average Step Height', average_step_height]
+      
     # Calculate surface roughness - TIR
     TIR1 = step1['leveldata'].max() - step1['leveldata'].min()
     TIR2 = step2['leveldata'].max() - step2['leveldata'].min()
