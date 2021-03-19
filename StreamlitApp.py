@@ -108,7 +108,6 @@ if uploaded_file is not None:
             parameters["Step Height {0}".format(i)] = np.absolute(stepx['leveldata'].mean() - stepy['leveldata'].mean())
         stepf1 = df[(df['Position'] >= (steps.iloc[len(steps)-2,0])) & (df['Position'] <= (steps.iloc[len(steps)-1,0]))]
         stepf2 = df[df['Position'] >= (steps.iloc[len(steps)-1,0])]
-        st.write(stepf1)
         parameters["Step Height {0}".format(len(steps)-1)] = np.absolute(stepf1['leveldata'].mean() - stepf2['leveldata'].mean())
            
     else:
@@ -116,9 +115,7 @@ if uploaded_file is not None:
         step2 = df[df['Position'] >= ((2-percent_data)*steps.iloc[0,0])]
         stepheight = np.absolute(step1['leveldata'].mean() - step2['leveldata'].mean())
         parameters = {{'Step height 1': stepheight}}
-    st.write(list(parameters.items()))
     parameterdf = pd.DataFrame(data= list(parameters.items()), columns = ['Parameter', 'Value (um)'])
-    st.write(parameterdf)
     average_step_height = parameterdf['Value (um)'].mean()
     parameterdf.loc[len(parameterdf)] = ['Average Step Height', average_step_height]
       
