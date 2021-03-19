@@ -97,29 +97,28 @@ if uploaded_file is not None:
         
     # Calculate step height of levelled data
     percent_data = st.slider('% Step for calculation', 0.0, 1.0, 0.75)
-
+    global parameters
     if len(steps) > 1:
-        step1 = df[df['Position'] <= (0.75*steps.iloc[0,0])]
-        step2 = df[(df['Position'] >= (1.25*steps.iloc[0,0])) & (df['Position'] <= (0.75*steps.iloc[1,0]))]
+        step1 = df[df['Position'] <= (percent_data*steps.iloc[0,0])]
+        step2 = df[(df['Position'] >= ((2-percent_data)*steps.iloc[0,0])) & (df['Position'] <= (percent_data*steps.iloc[1,0]))]
         parameters = {'Step Height 0': np.absolute(step1['leveldata'].mean() - step2['leveldata'].mean())}
-        for i in range(1, len(steps)):
-            if i == len(steps)-1:
-                st.write(i)
-                stepx = df[(df['Position'] >= (1.25*steps.iloc[i,0])) & (df['Position'] <= (0.75*steps.iloc[i+1,0]))]
-                stepy = df[df['Position'] >= (1.25*steps.iloc[i+1,0])]
-                parameters["Step Height {0}".format(i)] = np.absolute(stepx['leveldata'].mean() - stepy['leveldata'].mean())
-            else:
-                st.write(i)
-                stepx = df[(df['Position'] >= (1.25*steps.iloc[i-1,0])) & (df['Position'] <= (0.75*steps.iloc[i,0]))]
-                stepy = df[(df['Position'] >= (1.25*steps.iloc[i,0])) & (df['Position'] <= (0.75*steps.iloc[i+1,0]))]
-                parameters["Step Height {0}".format(i)] = np.absolute(stepx['leveldata'].mean() - stepy['leveldata'].mean())
-
+        for i in range(1, len(steps)-1):
+            stepx = df[(df['Position'] >= (steps.iloc[i-1,0])) & (df['Position'] <= (steps.iloc[i,0]))]
+            stepy = df[(df['Position'] >= (steps.iloc[i,0])) & (df['Position'] <= (steps.iloc[i+1,0]))]
+            parameters["Step Height {0}".format(i)] = np.absolute(stepx['leveldata'].mean() - stepy['leveldata'].mean())
+        stepf1 = df[(df['Position'] >= (steps.iloc[len(steps)-2,0])) & (df['Position'] <= (steps.iloc[len(steps)-1,0]))]
+        stepf2 = df[df['Position'] >= (steps.iloc[len(steps)-1,0])]
+        st.write(stepf1)
+        parameters["Step Height {0}".format(len(steps)-1)] = np.absolute(stepf1['leveldata'].mean() - stepf2['leveldata'].mean())
+           
     else:
-        step1 = df[df[0] <= (percent_data*steps.iloc[0,0])]
-        step2 = df[df[0] >= ((2-percent_data)*steps.iloc[0,0])]
+        step1 = df[df['Position'] <= (percent_data*steps.iloc[0,0])]
+        step2 = df[df['Position'] >= ((2-percent_data)*steps.iloc[0,0])]
         stepheight = np.absolute(step1['leveldata'].mean() - step2['leveldata'].mean())
-        parameters = {'Step height 1': stepheight}
-    parameterdf = pd.DataFrame(data= parameters, columns = ['Parameter', 'Value (um)'])
+        parameters = {{'Step height 1': stepheight}}
+    st.write(list(parameters.items()))
+    parameterdf = pd.DataFrame(data= list(parameters.items()), columns = ['Parameter', 'Value (um)'])
+    st.write(parameterdf)
     average_step_height = parameterdf['Value (um)'].mean()
     parameterdf.loc[len(parameterdf)] = ['Average Step Height', average_step_height]
       
