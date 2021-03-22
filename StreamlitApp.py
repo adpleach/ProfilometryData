@@ -114,7 +114,7 @@ if uploaded_file is not None:
         step1 = df[df['Position'] <= (percent_data*steps.iloc[0,0])]
         step2 = df[df['Position'] >= ((2-percent_data)*steps.iloc[0,0])]
         stepheight = np.absolute(step1['leveldata'].mean() - step2['leveldata'].mean())
-        parameters = {{'Step height 1': stepheight}}
+        parameters = {'Step height 1': stepheight}
     parameterdf = pd.DataFrame(data= list(parameters.items()), columns = ['Parameter', 'Value (um)'])
     average_step_height = parameterdf['Value (um)'].mean()
     parameterdf.loc[len(parameterdf)] = ['Average Step Height', average_step_height]
