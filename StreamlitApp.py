@@ -76,6 +76,7 @@ if uploaded_file is not None:
     chart.pyplot(fig)
     
     # Detect steps
+    global steps
     steps = find_steps_max(df)
     ax.set_title('Steps Detected')
     for i in range(0, len(steps)):
@@ -85,6 +86,9 @@ if uploaded_file is not None:
     if not steps.equals(error_steps):
         st.warning('Some steps are too close for an accurate step height to be determined.')
         st.dataframe(error_steps)
+    #if len(error_steps) > 1:
+        #steps = steps.loc[~steps['Position'].isin(error_steps['Position'])]
+    #st.write(steps)
     
     # Level data
     df['leveldata'] = level_data(df)
