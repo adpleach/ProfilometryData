@@ -1,4 +1,5 @@
-
-pip install pipreqs
-pipreqs /home/project/location
+streamlit = 0.77.0
+numpy = 1.19.2
+matplotlib = 3.3.2
+pandas = 1.1.3
 
